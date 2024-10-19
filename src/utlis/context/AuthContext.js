@@ -68,14 +68,18 @@ export const AuthProvider = ({ children }) => {
 
   const handleLoginError = (error) => {
     if (error instanceof Error) {
-      if (error.code === "auth/user-not-found") {
-        toast.error("Email tidak ditemukan. Silakan coba lagi.");
-      } else if (error.code === "auth/wrong-password") {
-        toast.error("Kata sandi salah. Silakan coba lagi.");
-      } else if (error.code === "auth/invalid-email") {
-        toast.error("Format email tidak valid. Periksa kembali email Anda.");
-      } else {
-        toast.error(`Login error: ${error.message}`);
+      switch (error.code) {
+        case "auth/user-not-found":
+          toast.error("Email tidak ditemukan. Silakan coba lagi.");
+          break;
+        case "auth/wrong-password":
+          toast.error("Kata sandi salah. Silakan coba lagi.");
+          break;
+        case "auth/invalid-email":
+          toast.error("Format email tidak valid. Periksa kembali email Anda.");
+          break;
+        default:
+          toast.error(`Login error: ${error.message}`);
       }
     } else {
       toast.error("Terjadi kesalahan tidak diketahui.");

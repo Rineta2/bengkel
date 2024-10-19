@@ -1,4 +1,3 @@
-// components/ProtectedRoute.js
 "use client";
 import { useAuth } from "@/utlis/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -10,16 +9,15 @@ const ProtectedRoute = ({ children }) => {
 
   useEffect(() => {
     if (!loading && !isLoggedIn) {
-      // Jika pengguna tidak login, arahkan ke halaman login
-      router.push("/");
+      router.push("/"); // Arahkan ke halaman login jika tidak ada user
     }
   }, [isLoggedIn, loading, router]);
 
   if (loading) {
-    return <div>Loading...</div>; // Tampilkan loading saat memuat status autentikasi
+    return <div>Loading...</div>;
   }
 
-  return children; // Render anak komponen jika pengguna sudah login
+  return children;
 };
 
 export default ProtectedRoute;
