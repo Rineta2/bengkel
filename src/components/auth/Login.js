@@ -40,7 +40,7 @@ export default function Login() {
 
       // Simpan token di localStorage
       localStorage.setItem("token", token);
-      login(email, password); // Call login function from context
+      login(email, password);
 
       toast.success("Logged in successfully");
       router.push("/dashboard");
