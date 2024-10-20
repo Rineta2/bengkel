@@ -11,8 +11,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { auth } from "@/utlis/firebase";
 import { useAuth } from "@/utlis/context/AuthContext";
 import { User, EyeOff, Eye } from "lucide-react";
-import image from "@/components/assets/login/login.png";
 import Image from "next/image";
+import image from "@/components/assets/login/login.png";
 import "@/components/styles/login.scss";
 
 export default function Login() {
@@ -22,41 +22,23 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const { login, isLoggedIn } = useAuth();
+  const { login, user } = useAuth();
 
   useEffect(() => {
-    if (isLoggedIn) {
+    if (user) {
       router.push("/dashboard");
     }
-  }, [isLoggedIn, router]);
+  }, [user, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-      const token = await user.getIdToken();
-
-      // Simpan token di cookies
-      Cookies.set("token", token);
-      login(email, password);
-
-      toast.success("Logged in successfully");
+      await login(email, password);
       router.push("/dashboard");
-    } catch (error) {
-      const errorCode = error.code;
-
-      if (errorCode === "auth/user-not-found") {
-        toast.error("Email tidak ditemukan. Silakan coba lagi.");
-      } else {
-        toast.error("Terjadi kesalahan saat login. Silakan coba lagi.");
-      }
+    } catch {
+      toast.error("Terjadi kesalahan saat login. Silakan coba lagi.");
     } finally {
       setLoading(false);
       setEmail("");
@@ -76,11 +58,10 @@ export default function Login() {
       );
       setTimeout(() => {
         setIsResetPassword(false);
-        router.push("/login"); // Mengarahkan kembali ke halaman login setelah reset
+        router.push("/login");
       }, 2000);
     } catch (error) {
-      const errorMessage = error.message;
-      toast.error(`Password reset error: ${errorMessage}`);
+      toast.error(`Password reset error: ${error.message}`);
     }
   };
 
@@ -102,7 +83,6 @@ export default function Login() {
               />
               <User size={40} />
             </div>
-
             {!isResetPassword && (
               <div className="form__box">
                 <input
@@ -120,7 +100,6 @@ export default function Login() {
                 </div>
               </div>
             )}
-
             <div className="btn">
               {!isResetPassword ? (
                 <button type="submit" className="login__btn" disabled={loading}>
@@ -137,7 +116,6 @@ export default function Login() {
                 </button>
               )}
             </div>
-
             <div className="forgot-password">
               <div
                 className="link"

@@ -1,6 +1,7 @@
 "use client";
+
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "@/utlis/firebase";
+import { auth } from "../firebase";
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -9,32 +10,32 @@ import {
 } from "firebase/auth";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export default function AuthContextProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    setIsLoading(true);
+    const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const token = await getIdToken(user);
         setUser(user);
-        Cookies.set("authToken", token, { expires: 7 }); // Simpan token di cookies selama 7 hari
+        Cookies.set("authToken", token, { expires: 7 });
       } else {
         setUser(null);
-        Cookies.remove("authToken"); // Hapus token jika user logout
+        Cookies.remove("authToken");
       }
-      setLoading(false); // Selesai memuat status autentikasi
+      setIsLoading(false);
     });
-    return () => unsubscribe();
+    return () => unsub();
   }, []);
 
   const login = async (email, password) => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
@@ -43,26 +44,29 @@ export const AuthProvider = ({ children }) => {
       );
       const user = userCredential.user;
       const token = await getIdToken(user);
-      Cookies.set("authToken", token, { expires: 7 }); // Simpan token di cookies
+      Cookies.set("authToken", token, { expires: 7 });
       setUser(user);
       toast.success(`Welcome back, ${user.email}`);
-      router.push("/dashboard"); // Arahkan ke dashboard setelah login
     } catch (error) {
+      setError(error?.message);
       handleLoginError(error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const logout = async () => {
+  const handleLogout = async () => {
+    setIsLoading(true);
     try {
       await signOut(auth);
       Cookies.remove("authToken");
       setUser(null);
       toast.success("Logged out successfully");
-      router.push("/"); // Arahkan ke halaman home setelah logout
     } catch (error) {
+      setError(error?.message);
       toast.error("Error signing out");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -88,17 +92,17 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, isLoggedIn: !!user, login, logout }}
+      value={{ user, isLoading, error, login, handleLogout }}
     >
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth must be used within an AuthContextProvider");
   }
   return context;
 };
