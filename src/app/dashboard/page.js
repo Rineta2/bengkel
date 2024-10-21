@@ -1,7 +1,7 @@
 export default function Page() {
   return (
-    <main className="p-10">
+    <section>
       <h1>Hallo World</h1>
-    </main>
+    </section>
   );
 }

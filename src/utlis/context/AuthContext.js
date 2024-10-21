@@ -40,7 +40,6 @@ export default function AuthContextProvider({ children }) {
 
     return () => {
       unsub();
-      // Cleanup the auth listener when the component unmounts
     };
   }, []);
 

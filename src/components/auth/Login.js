@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-} from "firebase/auth";
-import { toast, ToastContainer } from "react-toastify";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { toast, ToastContainer, Flip } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { auth } from "@/utlis/firebase";
 import { useAuth } from "@/utlis/context/AuthContext";
@@ -24,7 +21,6 @@ export default function Login() {
   const router = useRouter();
   const { login, user } = useAuth();
 
-  // Hanya jika user berhasil login, redirect ke /dashboard
   useEffect(() => {
     if (user) {
       router.push("/dashboard");
@@ -36,22 +32,54 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // Memanggil fungsi login dari AuthContext
       await login(email, password);
-      // Jika login berhasil, user state akan di-update, sehingga akan di-redirect ke /dashboard oleh useEffect
     } catch (error) {
-      // Menampilkan pesan error sesuai dengan jenis error
       if (error.code === "auth/user-not-found") {
-        toast.error("Akun tidak terdaftar. Silakan periksa email Anda.");
+        toast.warn("Akun tidak terdaftar. Silakan periksa email Anda.", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          theme: "light",
+          transition: Flip,
+        });
       } else if (error.code === "auth/wrong-password") {
-        toast.error("Kata sandi salah. Silakan coba lagi.");
+        toast.warn("Kata sandi salah. Silakan coba lagi.", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          theme: "light",
+          transition: Flip,
+        });
       } else if (error.code === "auth/invalid-email") {
-        toast.error("Format email tidak valid. Periksa kembali email Anda.");
+        toast.warn("Format email tidak valid. Periksa kembali email Anda.", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          theme: "light",
+          transition: Flip,
+        });
       } else {
-        toast.error("Terjadi kesalahan saat login. Silakan coba lagi.");
+        toast.warn("Terjadi kesalahan saat login. Silakan coba lagi.", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          theme: "light",
+          transition: Flip,
+        });
       }
     } finally {
-      // Mengatur ulang state loading dan membersihkan input
       setLoading(false);
       setEmail("");
       setPassword("");
@@ -60,20 +88,48 @@ export default function Login() {
 
   const handlePasswordReset = async () => {
     if (!email) {
-      toast.error("Masukan email untuk mereset password.");
+      toast.warn("Masukan email untuk mereset password.", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        theme: "light",
+        transition: Flip,
+      });
       return;
     }
     try {
       await sendPasswordResetEmail(auth, email);
-      toast.success(
-        "Pesan reset ulang kata sandi telah terkirim. Periksa email Anda."
+      toast.warn(
+        "Pesan reset ulang kata sandi telah terkirim. Periksa email Anda.",
+        {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          theme: "light",
+          transition: Flip,
+        }
       );
       setTimeout(() => {
         setIsResetPassword(false);
         router.push("/login");
       }, 2000);
     } catch (error) {
-      toast.error(`Password reset error: ${error.message}`);
+      toast.warn(`Password reset error: ${error.message}`, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        theme: "light",
+        transition: Flip,
+      });
     }
   };
 
@@ -139,7 +195,20 @@ export default function Login() {
           </form>
         </div>
       </div>
-      <ToastContainer />
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        limit={1}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover={false}
+        theme="light"
+        transition={Flip}
+      />
     </section>
   );
 }

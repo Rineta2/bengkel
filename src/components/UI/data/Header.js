@@ -1,4 +1,13 @@
-import { House, Book, Bolt, Trello, UsersRound } from "lucide-react";
+import {
+  House,
+  Book,
+  CreditCard,
+  Users,
+  ArrowLeftRight,
+  ReceiptText,
+} from "lucide-react";
+
+import { FaMotorcycle } from "react-icons/fa";
 
 export const navLink = [
   {
@@ -17,22 +26,35 @@ export const navLink = [
 
   {
     id: 3,
-    name: "Jenis Barang",
-    icon: <Bolt />,
-    path: "/dashboard/jenis-barang",
+    name: "Jenis Kendaraan",
+    icon: <FaMotorcycle />,
+    path: "/dashboard/jenis-kendaraan",
   },
 
   {
     id: 4,
-    name: "Merk Barang",
-    icon: <Trello />,
-    path: "/dashboard/merk-barang",
+    name: "Transaksi",
+    icon: <CreditCard />,
+    path: "/dashboard/transaksi",
   },
 
   {
     id: 5,
-    name: "Supplier",
-    icon: <UsersRound />,
-    path: "/dashboard/supplier",
+    name: "Rekapitulasi",
+    icon: <ReceiptText />,
+    path: "/dashboard/rekapitulasi",
+  },
+
+  {
+    id: 6,
+    name: "Data Pegawai",
+    icon: <Users />,
+    path: "/dashboard/data-pegawai",
+  },
+  {
+    id: 7,
+    name: "Data Transaksi",
+    icon: <ArrowLeftRight />,
+    path: "/dashboard/data-transaksi",
   },
 ];
