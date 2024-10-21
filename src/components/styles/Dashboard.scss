@@ -4,14 +4,59 @@
     display: flex;
     gap: 2rem;
     background-color: #efefef;
+    overflow: hidden;
     .header {
         background-color: #f5f5f5;
-        width: 23%;
+        width: 10%;
         padding: 1rem;
         display: flex;
         flex-direction: column;
         gap: 2rem;
         height: 100vh;
+        position: relative;
+        transition: all 0.5s ease-in-out;
+
+        .toggle__btn {
+            position: absolute;
+            top: 0.5rem;
+            right: -2rem;
+            cursor: pointer;
+            padding: 1rem;
+            border-radius: 50%;
+            background-color: #f5f5f5;
+        }
+
+        &.open {
+            width: 23%;
+            .profile {
+                .text {
+                    display: block;
+                }
+            }
+
+            .nav {
+                .nav__list {
+                    .nav__item {
+                        width: 100%;
+                        padding: 1rem;
+                        border-radius: 12px;
+                        display: flex;
+
+                        .nav__link {
+                            .name {
+                                display: block;
+                            }
+                        }
+                    }
+                }
+            }
+
+            .logout__btn {
+                width: 100%;
+                padding: 1rem;
+                border-radius: 12px;
+            }
+        }
 
         .profile {
             display: flex;
@@ -33,6 +78,7 @@
                 display: flex;
                 flex-direction: column;
                 gap: 0.5rem;
+                display: none;
 
                 h2 {
                     font-size: 2rem;
@@ -76,13 +122,18 @@
                 flex-direction: column;
                 list-style: none;
                 row-gap: 1.5rem;
-
+                align-items: center;
+                justify-content: center;
                 .nav__item {
-                    padding: 1.5rem 2%;
+                    // padding: 1rem 2%;
                     border-radius: 12px;
                     transition: all 0.5s ease;
                     position: relative;
-
+                    width: 60px;
+                    height: 60px;
+                    border-radius: 50%;
+                    display: grid;
+                    place-items: center;
                     &:hover {
                         background-color: $primary-c;
                         color: $background-c;
@@ -98,21 +149,35 @@
                         align-items: center;
                         gap: 1rem;
                         font-size: 1.5rem;
-                        padding-left: 1rem;
+                        justify-content: center;
+                        .icon {
+                            font-size: 2rem;
+                            display: grid;
+                            place-items: center;
+                        }
+
+                        .name {
+                            display: none;
+                            font-size: 1.5rem;
+                        }
                     }
                 }
             }
         }
 
         .logout__btn {
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: none;
             background-color: $primary-c;
             color: $background-c;
-            width: 100%;
+            width: 150px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
             font-size: 1.5rem;
             cursor: pointer;
+            margin: 0 auto;
+            gap: 1rem;
         }
     }
 

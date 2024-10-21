@@ -1,17 +1,24 @@
 import React, { useState } from "react";
+
 import { useRouter } from "next/navigation";
+
 import { useAuth } from "@/utlis/context/AuthContext";
+
 import { navLink } from "@/components/UI/data/Header";
+
 import Link from "next/link";
+
 import img from "@/components/assets/dashboard/user/img.png";
+
 import Image from "next/image";
-import { Search } from "lucide-react";
+
+import { Search, CircleArrowRight, LogOut } from "lucide-react";
 
 import { usePathname } from "next/navigation";
 export default function Header() {
   const { handleLogout, user } = useAuth();
 
-  const [active, setActive] = useState("dashboard");
+  const [isOpen, setIsOpen] = useState(false);
 
   const pathname = usePathname();
 
@@ -27,7 +34,7 @@ export default function Header() {
   };
 
   return (
-    <header className="header">
+    <header className={`header ${isOpen ? "open" : ""}`}>
       <div className="profile">
         <div className="img">
           <Image src={img} alt="img" loading="lazy" quality={100} />
@@ -58,8 +65,8 @@ export default function Header() {
               className={`nav__item ${pathname === link.path ? "active" : ""}`}
             >
               <Link href={link.path} className="nav__link">
-                {link.icon}
-                {link.name}
+                <span className="icon">{link.icon}</span>
+                <span className="name">{link.name}</span>
               </Link>
             </li>
           ))}
@@ -67,10 +74,15 @@ export default function Header() {
       </nav>
 
       {user && (
-        <button className="logout__btn" onClick={handleLogoutClick}>
-          Logout
-        </button>
+        <div className="logout__btn" onClick={handleLogoutClick}>
+          <LogOut size={30} />
+          <span>Logout</span>
+        </div>
       )}
+
+      <div className="toggle__btn" onClick={() => setIsOpen(!isOpen)}>
+        <CircleArrowRight size={30} />
+      </div>
     </header>
   );
 }
