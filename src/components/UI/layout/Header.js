@@ -75,7 +75,7 @@ export default function Header() {
 
       {user && (
         <div className="logout__btn" onClick={handleLogoutClick}>
-          <LogOut size={30} />
+          <LogOut size={24} />
           <span>Logout</span>
         </div>
       )}
