@@ -11,7 +11,13 @@ import {
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 
-const AuthContext = createContext();
+const AuthContext = createContext({
+  user: null,
+  isLoading: false,
+  error: null,
+  login: async () => {},
+  handleLogout: async () => {},
+});
 
 export default function AuthContextProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -31,7 +37,11 @@ export default function AuthContextProvider({ children }) {
       }
       setIsLoading(false);
     });
-    return () => unsub();
+
+    return () => {
+      unsub();
+      // Cleanup the auth listener when the component unmounts
+    };
   }, []);
 
   const login = async (email, password) => {
@@ -71,23 +81,15 @@ export default function AuthContextProvider({ children }) {
   };
 
   const handleLoginError = (error) => {
-    if (error instanceof Error) {
-      switch (error.code) {
-        case "auth/user-not-found":
-          toast.error("Email tidak ditemukan. Silakan coba lagi.");
-          break;
-        case "auth/wrong-password":
-          toast.error("Kata sandi salah. Silakan coba lagi.");
-          break;
-        case "auth/invalid-email":
-          toast.error("Format email tidak valid. Periksa kembali email Anda.");
-          break;
-        default:
-          toast.error(`Login error: ${error.message}`);
-      }
-    } else {
-      toast.error("Terjadi kesalahan tidak diketahui.");
-    }
+    const errorMessages = {
+      "auth/user-not-found": "Email tidak ditemukan. Silakan coba lagi.",
+      "auth/wrong-password": "Kata sandi salah. Silakan coba lagi.",
+      "auth/invalid-email":
+        "Format email tidak valid. Periksa kembali email Anda.",
+    };
+    const message =
+      errorMessages[error.code] || `Login error: ${error.message}`;
+    toast.error(message);
   };
 
   return (

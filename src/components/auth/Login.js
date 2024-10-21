@@ -24,6 +24,7 @@ export default function Login() {
   const router = useRouter();
   const { login, user } = useAuth();
 
+  // Hanya jika user berhasil login, redirect ke /dashboard
   useEffect(() => {
     if (user) {
       router.push("/dashboard");
@@ -35,11 +36,22 @@ export default function Login() {
     setLoading(true);
 
     try {
+      // Memanggil fungsi login dari AuthContext
       await login(email, password);
-      router.push("/dashboard");
-    } catch {
-      toast.error("Terjadi kesalahan saat login. Silakan coba lagi.");
+      // Jika login berhasil, user state akan di-update, sehingga akan di-redirect ke /dashboard oleh useEffect
+    } catch (error) {
+      // Menampilkan pesan error sesuai dengan jenis error
+      if (error.code === "auth/user-not-found") {
+        toast.error("Akun tidak terdaftar. Silakan periksa email Anda.");
+      } else if (error.code === "auth/wrong-password") {
+        toast.error("Kata sandi salah. Silakan coba lagi.");
+      } else if (error.code === "auth/invalid-email") {
+        toast.error("Format email tidak valid. Periksa kembali email Anda.");
+      } else {
+        toast.error("Terjadi kesalahan saat login. Silakan coba lagi.");
+      }
     } finally {
+      // Mengatur ulang state loading dan membersihkan input
       setLoading(false);
       setEmail("");
       setPassword("");
