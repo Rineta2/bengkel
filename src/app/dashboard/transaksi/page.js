@@ -22,7 +22,6 @@ const TransaksiPage = () => {
 
   const handleDelete = async (id) => {
     const transaksiDoc = doc(db, "transaksi", id);
-
     try {
       const transaksiSnap = await getDoc(transaksiDoc);
       if (transaksiSnap.exists()) {
@@ -62,7 +61,7 @@ const TransaksiPage = () => {
       totalHarga: 0,
       clientPayment: 0,
       kembalian: 0,
-      tanggal: new Date(), // Simpan tanggal saat ini
+      tanggal: new Date(),
     };
 
     try {
@@ -145,7 +144,6 @@ const TransaksiPage = () => {
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
 
-    // Remove the iframe after printing to avoid memory leaks
     setTimeout(() => {
       document.body.removeChild(iframe);
     }, 1000);
@@ -189,7 +187,7 @@ const TransaksiPage = () => {
                         <td rowSpan={trans.selectedProducts.length}>Rp {trans.clientPayment || "N/A"}</td>
                         <td rowSpan={trans.selectedProducts.length}>Rp {trans.kembalian || "N/A"}</td>
                         <td rowSpan={trans.selectedProducts.length}>
-                          {new Date(trans.tanggal.seconds * 1000).toLocaleDateString()} {/* Format tanggal */}
+                          {new Date(trans.tanggal.seconds * 1000).toLocaleDateString()}
                         </td>
                         <td rowSpan={trans.selectedProducts.length}>
                           <Link href={`/dashboard/transaksi/form?id=${trans.id}`} className="btn btn-edit">Edit</Link>
