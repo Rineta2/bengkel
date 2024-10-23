@@ -79,69 +79,76 @@ const TransaksiPage = () => {
   };
 
   const handlePrint = (trans) => {
-    const printWindow = window.open("", "_blank");
-    if (printWindow) {
-      const receiptItems = trans.selectedProducts
-        .map(
-          (product) => `
-            <tr>
-              <td>${product.name}</td>
-              <td>${product.quantity}</td>
-              <td>Rp ${product.price}</td>
-            </tr>`
-        )
-        .join("");
-
-      const totalHarga = trans.totalHarga || 0;
-      const clientPayment = trans.clientPayment || 0;
-      const kembalian = (clientPayment - totalHarga).toFixed(2);
-
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Cetak Struk</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 20px; }
-              .receipt-container { max-width: 350px; margin: auto; border: 1px solid #ddd; padding: 15px; }
-              .store-info { text-align: center; margin-bottom: 20px; }
-              .item-list { width: 100%; margin-bottom: 10px; }
-              .item-list th, .item-list td { text-align: left; padding: 5px; }
-              .item-list th { border-bottom: 1px solid #000; }
-              .total-section { text-align: right; margin-top: 10px; }
-              .thanks-message { text-align: center; margin-top: 20px; }
-            </style>
-          </head>
-          <body>
-            <div class="receipt-container">
-              <div class="store-info">
-                <h2>Digitalia</h2>
-                <p>Kp. Babakan, RT.01/RW.05, Desa Leuwiliang, Kec. Leuwiliang, Kab. Bogor, 16640</p>
-                <p>No. Telp 0813986302939</p>
-              </div>
-              <table class="item-list">
-                <thead>
-                  <tr><th>Item</th><th>Qty</th><th>Harga</th></tr>
-                </thead>
-                <tbody>
-                  ${receiptItems}
-                </tbody>
-              </table>
-              <div class="total-section">
-                <h3>Total: Rp ${totalHarga}</h3>
-                <h3>Bayar (Cash): Rp ${clientPayment}</h3>
-                <h3>Kembali: Rp ${kembalian}</h3>
-              </div>
-              <div class="thanks-message">
-                <p>Terimakasih Telah Berbelanja</p>
-                <p>Link Kritik dan Saran: digitalia.web.app/e-receipt</p>
-              </div>
+    const printContent = `
+      <html>
+        <head>
+          <title>Cetak Struk</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            .receipt-container { max-width: 350px; margin: auto; border: 1px solid #ddd; padding: 15px; }
+            .store-info { text-align: center; margin-bottom: 20px; }
+            .item-list { width: 100%; margin-bottom: 10px; }
+            .item-list th, .item-list td { text-align: left; padding: 5px; }
+            .item-list th { border-bottom: 1px solid #000; }
+            .total-section { text-align: right; margin-top: 10px; }
+            .thanks-message { text-align: center; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="receipt-container">
+            <div class="store-info">
+              <h2>Digitalia</h2>
+              <p>Kp. Babakan, RT.01/RW.05, Desa Leuwiliang, Kec. Leuwiliang, Kab. Bogor, 16640</p>
+              <p>No. Telp 0813986302939</p>
             </div>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.print();
-    }
+            <table class="item-list">
+              <thead>
+                <tr><th>Item</th><th>Qty</th><th>Harga</th></tr>
+              </thead>
+              <tbody>
+                ${trans.selectedProducts.map((product) => `
+                  <tr>
+                    <td>${product.name}</td>
+                    <td>${product.quantity}</td>
+                    <td>Rp ${product.price}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            <div class="total-section">
+              <h3>Total: Rp ${trans.totalHarga}</h3>
+              <h3>Bayar (Cash): Rp ${trans.clientPayment}</h3>
+              <h3>Kembali: Rp ${(trans.clientPayment - trans.totalHarga).toFixed(2)}</h3>
+            </div>
+            <div class="thanks-message">
+              <p>Terimakasih Telah Berbelanja</p>
+              <p>Link Kritik dan Saran: digitalia.web.app/e-receipt</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+    iframe.style.border = 'none';
+
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write(printContent);
+    iframeDoc.close();
+
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+
+    // Remove the iframe after printing to avoid memory leaks
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 1000);
   };
 
   return (
