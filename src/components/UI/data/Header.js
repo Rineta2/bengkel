@@ -7,8 +7,6 @@ import {
   ReceiptText,
 } from "lucide-react";
 
-import { FaMotorcycle } from "react-icons/fa";
-
 export const navLink = [
   {
     id: 1,
@@ -26,33 +24,26 @@ export const navLink = [
 
   {
     id: 3,
-    name: "Jenis Kendaraan",
-    icon: <FaMotorcycle />,
-    path: "/dashboard/jenis-kendaraan",
-  },
-
-  {
-    id: 4,
     name: "Transaksi",
     icon: <CreditCard />,
     path: "/dashboard/transaksi",
   },
 
   {
-    id: 5,
+    id: 4,
     name: "Rekapitulasi",
     icon: <ReceiptText />,
     path: "/dashboard/rekapitulasi",
   },
 
   {
-    id: 6,
+    id: 5,
     name: "Data Pegawai",
     icon: <Users />,
     path: "/dashboard/data-pegawai",
   },
   {
-    id: 7,
+    id: 6,
     name: "Data Transaksi",
     icon: <ArrowLeftRight />,
     path: "/dashboard/data-transaksi",

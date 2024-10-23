@@ -10,6 +10,8 @@ import Error from "@/components/UI/section/dashboard/Error";
 
 import Header from "@/components/UI/layout/Header";
 
+import Navbar from "@/components/UI/layout/Navbar";
+
 import "@/components/styles/Dashboard.scss";
 
 export default function Dashboard({ children }) {
@@ -57,7 +59,10 @@ export default function Dashboard({ children }) {
   return (
     <Fragment>
       <main className="dashboard">
-        <Header />
+        <div className="sidebar">
+          <Header />
+          <Navbar />
+        </div>
         <div className="aside">{children}</div>
       </main>
     </Fragment>

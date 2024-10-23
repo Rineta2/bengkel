@@ -2,268 +2,279 @@
 
 .dashboard {
     display: flex;
-    gap: 2rem;
-    background-color: #efefef;
-    overflow: hidden;
-    .header {
-        background-color: #f5f5f5;
-        width: 10%;
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-        height: 100vh;
-        position: relative;
-        transition: all 0.5s ease-in-out;
+    .sidebar {
+        width: 5%;
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 999;
+            padding: 1rem 2%;
+            background-color: $background-c;
 
-        @media only screen and (max-width: 1280px) {
-            gap: 1rem;
-            width: 15%;
-        }
+            &__container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
 
-        @media only screen and (max-width: 1024px) {
-            width: 15%;
-            gap: 3rem;
-        }
+                .profile {
+                    display: flex;
+                    gap: 0.5rem;
 
-        @media only screen and (max-width: 768px) {
-            width: 25%;
-        }
+                    .img {
+                        img {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                        }
+                    }
 
-        .toggle__btn {
-            position: absolute;
-            top: 0.5rem;
-            right: -2rem;
-            cursor: pointer;
-            padding: 1rem;
-            border-radius: 50%;
-            background-color: #f5f5f5;
-        }
-
-        &.open {
-            width: 23%;
-
-            @media only screen and (max-width: 1024px) {
-                width: 50%;
-            }
-
-            @media only screen and (max-width: 468px) {
-                width: 70%;
-            }
-
-            .profile {
-                display: grid;
-                place-items: center;
-                text-align: center;
-
-                .text {
-                    display: block;
-                }
-            }
-
-            .nav {
-                .nav__list {
-                    row-gap: 1rem;
-                    .nav__item {
-                        width: 100%;
-                        padding: 1rem;
+                    .text {
                         display: flex;
-                        border-radius: 12px;
+                        flex-direction: column;
+                        justify-content: center;
+                        gap: 0.5rem;
+                        h2 {
+                            font-size: 1.5rem;
+                            letter-spacing: 2px;
+                        }
 
-                        .nav__link {
-                            .name {
-                                display: block;
-                            }
+                        p {
+                            font-size: 1.3rem;
+                            letter-spacing: 2px;
                         }
                     }
                 }
-            }
 
-            .search {
-                input {
-                    @media only screen and (max-width: 992px) {
-                        display: block;
+                .header__actions {
+                    display: flex;
+                    gap: 3rem;
+
+                    .search {
+                        display: flex;
+                        padding: 1rem;
+                        background-color: #efefef;
+                        border-radius: 12px;
+                        align-items: center;
+                        gap: 1rem;
+
+                        input {
+                            width: 100%;
+                            height: 50px;
+                            outline: none;
+                            border: none;
+                            padding: 0.5rem;
+                            background-color: transparent;
+                            font-size: 1.3rem;
+                            color: $text-c;
+                            letter-spacing: 2px;
+                        }
                     }
-                }
-            }
 
-            .logout__btn {
-                width: 100%;
-                padding: 1rem;
-                border-radius: 12px;
-
-                @media only screen and (max-width: 992px) {
-                    background-color: $primary-c;
-                    color: $background-c;
-                }
-
-                @media only screen and (max-width: 1024px) {
-                    span {
-                        display: block;
+                    .logout__btn {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                        cursor: pointer;
                     }
-                }
-            }
-        }
-
-        .profile {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            padding: 0.5rem;
-            border-radius: 12px;
-
-            .img {
-                img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                }
-            }
-
-            .text {
-                display: flex;
-                flex-direction: column;
-                gap: 0.5rem;
-                display: none;
-
-                h2 {
-                    font-size: 2rem;
-                    letter-spacing: 2px;
-                }
-
-                p {
-                    font-size: 1.5rem;
-                }
-            }
-        }
-
-        .search {
-            display: flex;
-            padding: 1rem;
-            background-color: #efefef;
-            border-radius: 12px;
-            justify-content: center;
-            gap: 1rem;
-            align-items: center;
-
-            input {
-                width: 100%;
-                padding: 1rem;
-                border-radius: 12px;
-                border: none;
-                background-color: transparent;
-                border: none;
-                color: $text-c;
-                font-size: 1.3rem;
-
-                @media only screen and (max-width: 992px) {
-                    display: none;
-                }
-
-                &:focus {
-                    outline: none;
                 }
             }
         }
 
         .nav {
-            @media only screen and (max-width: 1280px) {
-                overflow-y: scroll;
-                height: 100%;
-            }
-            .nav__list {
-                display: flex;
-                flex-direction: column;
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8%;
+            display: grid;
+            place-items: center;
+            background-color: $background-c;
+            height: 100%;
+
+            &__list {
+                display: grid;
+                place-items: center;
+                gap: 2rem;
                 list-style: none;
-                row-gap: 2rem;
-                align-items: center;
-                justify-content: center;
-
-                @media only screen and (max-width: 1280px) {
-                    row-gap: 2.5rem;
-                }
-
-                @media only screen and (max-width: 468px) {
-                    row-gap: 1rem;
-                }
-
+                margin-top: 5rem;
                 .nav__item {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                    padding: 1rem;
                     border-radius: 12px;
-                    transition: all 0.5s ease;
-                    position: relative;
-                    width: 60px;
-                    height: 60px;
-                    border-radius: 50%;
-                    display: grid;
-                    place-items: center;
-
-                    &:hover {
-                        background-color: $primary-c;
-                        color: $background-c;
-                    }
-
+                    width: 100%;
+                    transition: all 0.5s ease-in-out;
                     &.active {
-                        color: $background-c;
                         background-color: $primary-c;
+                        color: $background-c;
                     }
 
                     .nav__link {
                         display: flex;
+                        flex-direction: column;
                         align-items: center;
-                        gap: 1rem;
-                        font-size: 1.5rem;
-                        justify-content: center;
+                        gap: 0.5rem;
 
                         .icon {
                             font-size: 2rem;
-                            display: grid;
-                            place-items: center;
                         }
 
                         .name {
-                            display: none;
-                            font-size: 1.5rem;
+                            font-size: 1.1rem;
                         }
                     }
                 }
-            }
-        }
-
-        .logout__btn {
-            background-color: $primary-c;
-            color: $background-c;
-            width: 150px;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            margin: 0 auto;
-            gap: 1rem;
-
-            @media only screen and (max-width: 1024px) {
-                width: 60px;
-                height: 60px;
-                border-radius: 50%;
-
-                span {
-                    display: none;
-                }
-            }
-
-            @media only screen and (max-width: 992px) {
-                background-color: transparent;
-                color: $text-c;
             }
         }
     }
 
     .aside {
         width: 100%;
-        padding-left: 2rem;
-        padding-top: 2rem;
+        padding: 4rem;
+        background-color: #efefef;
+        height: 100vh;
+
+        .data-barang {
+            .barang__container {
+                padding: 1rem 2%;
+
+                .actions {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 2rem;
+
+                    .title {
+                        h1 {
+                            font-size: 2rem;
+                            letter-spacing: 2px;
+                        }
+                    }
+
+                    .form {
+                        display: flex;
+                        width: 150px;
+                        background-color: $primary-c;
+                        color: $background-c;
+                        height: 50px;
+                        display: grid;
+                        place-items: center;
+                        border-radius: 12px;
+                        font-size: 1.3rem;
+                    }
+                }
+
+                .barang-table {
+                    font-family: Arial, Helvetica, sans-serif;
+                    border-collapse: collapse;
+                    width: 100%;
+
+                    th,
+                    td {
+                        border: 1px solid #ddd;
+                        padding: 16px;
+                        line-height: 1.5;
+                    }
+
+                    tr {
+                        .action__btn {
+                            display: flex;
+                            justify-content: space-around;
+                        }
+
+                        td {
+                            font-size: 1.4rem;
+                        }
+
+                        th {
+                            padding-top: 12px;
+                            padding-bottom: 12px;
+                            font-size: 1.5rem;
+                            text-align: left;
+                            background-color: $primary-c;
+                            color: white;
+                        }
+                    }
+                }
+
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    backdrop-filter: blur(10px);
+                    z-index: 9999;
+                    display: grid;
+                    place-items: center;
+
+                    .modal-content {
+                        padding: 1rem;
+                        width: 30%;
+                        height: 50%;
+                        background-color: $background-c;
+                        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+                        display: grid;
+                        place-items: center;
+                        border-radius: 12px;
+
+                        h2 {
+                            font-size: 2rem;
+                            letter-spacing: 2px;
+                        }
+
+                        p {
+                            font-size: 1.3rem;
+                        }
+
+                        .modal-actions {
+                            display: flex;
+                            gap: 1rem;
+
+                            button {
+                                width: 100px;
+                                height: 50px;
+                                background-color: $primary-c;
+                                color: $background-c;
+                                border-radius: 12px;
+                                font-size: 1.3rem;
+                                border: none;
+                            }
+                        }
+                    }
+                }
+
+                .toolbar {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 3rem;
+                    margin-bottom: 3rem;
+                    input {
+                        width: 20%;
+                        padding: 1.5rem;
+                        background-color: $primary-c;
+                        border-radius: 12px;
+                        font-size: 1.3rem;
+                        border: none;
+                        color: $background-c;
+
+                        &::placeholder {
+                            color: $background-c;
+                            opacity: 0.8;
+                        }
+                    }
+
+                    .total {
+                        h2 {
+                            font-size: 2rem;
+                            letter-spacing: 2px;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

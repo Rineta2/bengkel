@@ -1,167 +1,104 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { getDocs, collection, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/utlis/firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-  doc,
-  getDoc,
-} from "firebase/firestore";
+import { FaEdit } from "react-icons/fa";
+import { IoTrashOutline } from "react-icons/io5";
+import Modal from "@/components/UI/section/dashboard/data-barang/Modal";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import the styles
 
 export default function DataBarang() {
   const [barang, setBarang] = useState([]);
-  const [newKodeBarang, setNewKodeBarang] = useState("");
-  const [newName, setNewName] = useState("");
-  const [newPrice, setNewPrice] = useState(0);
-  const [newQuantity, setNewQuantity] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [editMode, setEditMode] = useState(false);
-  const [currentId, setCurrentId] = useState(null);
-  const barangCollectionRef = collection(db, "dataBarang");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
-  // Fetch data barang dari Firestore
   useEffect(() => {
-    const getBarang = async () => {
-      const data = await getDocs(barangCollectionRef);
+    const fetchBarang = async () => {
+      const data = await getDocs(collection(db, "dataBarang"));
       setBarang(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     };
-    getBarang();
+
+    fetchBarang();
   }, []);
 
-  // Fungsi untuk menambahkan atau memperbarui barang
-  const handleSave = async () => {
-    if (newKodeBarang && newName && newPrice > 0 && newQuantity > 0) {
-      if (editMode && currentId) {
-        // Update barang
-        await updateBarang(currentId, newName, newPrice, newQuantity);
-      } else {
-        // Tambah barang baru
-        await addDoc(barangCollectionRef, {
-          kodeBarang: newKodeBarang,
-          name: newName,
-          price: newPrice,
-          quantity: newQuantity,
+  const handleDeleteClick = (id) => {
+    setItemToDelete(id);
+    setIsModalOpen(true);
+  };
+
+  const confirmDeleteBarang = async () => {
+    if (itemToDelete) {
+      const barangDoc = doc(db, "dataBarang", itemToDelete);
+      try {
+        await deleteDoc(barangDoc);
+        setBarang(barang.filter((item) => item.id !== itemToDelete));
+        toast.success("Data berhasil dihapus", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          transition: "Flip",
         });
-      }
-      setNewKodeBarang("");
-      setNewName("");
-      setNewPrice(0);
-      setNewQuantity(0);
-      setEditMode(false);
-      setCurrentId(null);
-
-      // Refresh data setelah penambahan atau update
-      const data = await getDocs(barangCollectionRef);
-      setBarang(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-    } else {
-      alert("Semua field harus diisi dengan benar.");
-    }
-  };
-
-  // Fungsi untuk mempersiapkan update barang
-  const prepareUpdate = (id, kodeBarang, name, price, quantity) => {
-    setNewKodeBarang(kodeBarang);
-    setNewName(name);
-    setNewPrice(price);
-    setNewQuantity(quantity);
-    setEditMode(true);
-    setCurrentId(id);
-  };
-
-  // Fungsi untuk memperbarui barang
-  const updateBarang = async (
-    id,
-    updatedName,
-    updatedPrice,
-    updatedQuantity
-  ) => {
-    const barangDoc = doc(db, "dataBarang", id);
-    try {
-      const docSnapshot = await getDoc(barangDoc);
-      if (docSnapshot.exists()) {
-        await updateDoc(barangDoc, {
-          name: updatedName,
-          price: updatedPrice,
-          quantity: updatedQuantity,
+      } catch (error) {
+        console.error("Error deleting document:", error);
+        toast.error("Terjadi kesalahan saat menghapus data", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          transition: "Flip",
         });
-        alert("Update berhasil");
-
-        const data = await getDocs(barangCollectionRef);
-        setBarang(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-      } else {
-        alert("Dokumen tidak ditemukan.");
+      } finally {
+        setIsModalOpen(false);
+        setItemToDelete(null);
       }
-    } catch (error) {
-      console.error("Error updating document:", error);
     }
   };
 
-  // Fungsi untuk menghapus barang
-  const deleteBarang = async (id) => {
-    const barangDoc = doc(db, "dataBarang", id);
-    try {
-      await deleteDoc(barangDoc);
-      alert("Hapus berhasil");
-
-      const data = await getDocs(barangCollectionRef);
-      setBarang(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-    } catch (error) {
-      console.error("Error deleting document:", error);
-    }
-  };
-
-  // Filter barang berdasarkan pencarian
-  const filteredBarang = barang.filter((item) =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredBarang = barang.filter(
+    (item) =>
+      item.kodeBarang.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <section className="data">
+    <section className="data-barang">
       <div className="barang__container container">
-        <h1>Data Barang</h1>
+        <div className="actions">
+          <div className="title">
+            <h1>Data Barang</h1>
+          </div>
+
+          <div className="form">
+            <Link href="/dashboard/data-barang/form">Tambah Barang</Link>
+          </div>
+        </div>
+
         <div className="toolbar">
           <input
             type="text"
-            placeholder="Kode Barang"
-            value={newKodeBarang}
-            onChange={(e) => setNewKodeBarang(e.target.value)}
-            className="input"
-          />
-          <input
-            type="text"
-            placeholder="Nama Barang"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="input"
-          />
-          <input
-            type="number"
-            placeholder="Harga"
-            value={newPrice}
-            onChange={(e) => setNewPrice(parseInt(e.target.value))}
-            className="input"
-          />
-          <input
-            type="number"
-            placeholder="Stok"
-            value={newQuantity}
-            onChange={(e) => setNewQuantity(parseInt(e.target.value))}
-            className="input"
-          />
-          <button onClick={handleSave} className="btn btn-create">
-            {editMode ? "Update" : "Create"}
-          </button>
-          <input
-            type="text"
-            placeholder="Search"
+            placeholder="Cari Kode atau Nama Barang" // Update placeholder
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
           />
+
+          <div className="total">
+            <h2>Total Barang: {filteredBarang.length}</h2>
+          </div>
         </div>
+
         <table className="barang-table">
           <thead>
             <tr>
@@ -173,6 +110,7 @@ export default function DataBarang() {
               <th>Action</th>
             </tr>
           </thead>
+
           <tbody>
             {filteredBarang.map((item, index) => (
               <tr key={item.id}>
@@ -181,35 +119,43 @@ export default function DataBarang() {
                 <td>{item.name}</td>
                 <td>Rp {item.price.toLocaleString()}</td>
                 <td>{item.quantity}</td>
-                <td>
-                  <button
-                    className="btn btn-update"
-                    onClick={() =>
-                      prepareUpdate(
-                        item.id,
-                        item.kodeBarang,
-                        item.name,
-                        item.price,
-                        item.quantity
-                      )
-                    }
-                  >
-                    Edit
-                  </button>
-                  <button
+                <td className="action__btn">
+                  <Link href={`/dashboard/data-barang/form?id=${item.id}`}>
+                    <FaEdit size={30} />
+                  </Link>
+
+                  <div
                     className="btn btn-delete"
-                    onClick={() => deleteBarang(item.id)}
+                    onClick={() => handleDeleteClick(item.id)}
                   >
-                    Delete
-                  </button>
+                    <IoTrashOutline size={30} />
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        <div className="total-records">
-          <p>Total Record: {filteredBarang.length}</p>
-        </div>
+
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onConfirm={confirmDeleteBarang}
+        />
+
+        <ToastContainer
+          position="top-center"
+          autoClose={5000}
+          limit={1}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover={false}
+          theme="light"
+          transition="Flip"
+        />
       </div>
     </section>
   );
