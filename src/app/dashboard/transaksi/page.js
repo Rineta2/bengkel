@@ -133,26 +133,12 @@ const TransaksiPage = () => {
 
     // Generate PDF blob
     const pdfBlob = doc.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
 
-    // Membuka PDF di tab baru
-    const newWindow = window.open(pdfUrl);
-
-    // Setelah PDF dibuka, langsung cetak secara otomatis jika window berhasil dibuka
-    if (newWindow) {
-      newWindow.onload = () => {
-        newWindow.focus(); // Fokus ke window baru
-        newWindow.print(); // Buka dialog print
-      };
-    } else {
-      // Jika tidak bisa membuka tab baru (kemungkinan pada beberapa perangkat mobile)
-      alert('Gagal membuka file PDF, pastikan pop-up diizinkan di browser.');
-    }
+    // Instead of opening the blob URL, directly download it using FileSaver
+    saveAs(pdfBlob, `Struk_${trans.kodeTransaksi}.pdf`);
   };
 
-  const isMobileDevice = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  };
+
 
   const filteredTransaksi = transaksi.filter((trans) =>
     trans.kodeTransaksi.toLowerCase().includes(searchTerm.toLowerCase())
