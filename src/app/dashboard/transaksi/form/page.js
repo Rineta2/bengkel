@@ -134,7 +134,7 @@ export default function FormTransaksi() {
   };
 
   return (
-    <section>
+    <section className="form__transaksi">
       <div className="container">
         <form onSubmit={handleSubmit}>
           <label>Kode Transaksi:</label>

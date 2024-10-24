@@ -173,10 +173,6 @@ const TransaksiPage = () => {
 
         <div className="toolbar">
           <input type="text" placeholder="Cari Kode Transaksi" />
-
-          <div className="total">
-            <h2>Total Transaksi: {transaksi.length}</h2>
-          </div>
         </div>
 
         <table className="barang-table">
