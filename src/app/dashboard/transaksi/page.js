@@ -2,19 +2,33 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/utlis/firebase";
-import { collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, updateDoc, addDoc } from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  updateDoc,
+  addDoc,
+} from "firebase/firestore";
 import Link from "next/link";
 
 const TransaksiPage = () => {
   const [transaksi, setTransaksi] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
   const transaksiCollectionRef = collection(db, "transaksi");
   const router = useRouter();
 
   useEffect(() => {
     const fetchTransaksi = async () => {
+      setLoading(true);
       const q = query(transaksiCollectionRef, orderBy("tanggal", "desc"));
       const data = await getDocs(q);
       setTransaksi(data.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setLoading(false);
     };
 
     fetchTransaksi();
@@ -91,14 +105,17 @@ const TransaksiPage = () => {
         <head>
           <title>Cetak Struk</title>
           <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            .receipt-container { max-width: 350px; margin: auto; border: 1px solid #ddd; padding: 15px; }
-            .store-info { text-align: center; margin-bottom: 20px; }
-            .item-list { width: 100%; margin-bottom: 10px; }
-            .item-list th, .item-list td { text-align: left; padding: 5px; }
-            .item-list th { border-bottom: 1px solid #000; }
-            .total-section { text-align: right; margin-top: 10px; }
-            .thanks-message { text-align: center; margin-top: 20px; }
+            @media print {
+              body { font-family: Arial, sans-serif; padding: 0; margin: 0; }
+              .receipt-container { max-width: 280px; margin: auto; border: 1px solid #ddd; padding: 10px; }
+              .store-info { text-align: center; margin-bottom: 10px; }
+              .item-list { width: 100%; margin-bottom: 10px; }
+              .item-list th, .item-list td { text-align: left; padding: 3px; }
+              .item-list th { border-bottom: 1px solid #000; }
+              .total-section { text-align: right; margin-top: 5px; }
+              .thanks-message { text-align: center; margin-top: 10px; }
+              @page { size: 80mm auto; margin: 0; } /* Ukuran kertas untuk printer thermal */
+            }
           </style>
         </head>
         <body>
@@ -157,77 +174,87 @@ const TransaksiPage = () => {
     }, 1000);
   };
 
+  // Filter transactions based on search term
+  const filteredTransaksi = transaksi.filter((trans) =>
+    trans.kodeTransaksi.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <section className="transaksi">
       <div className="transaksi__container container">
-
         <div className="actions">
           <div className="title">
             <h1>Daftar Transaksi</h1>
           </div>
-
           <div className="form">
             <button onClick={handleAddTransaksi} className="btn btn-create">Tambah Transaksi</button>
           </div>
         </div>
 
         <div className="toolbar">
-          <input type="text" placeholder="Cari Kode Transaksi" />
+          <input
+            type="text"
+            placeholder="Cari Kode Transaksi"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
 
-        <table className="barang-table">
-          <thead>
-            <tr>
-              <th>Kode Transaksi</th>
-              <th>Keterangan Service</th>
-              <th>Quantity</th>
-              <th>Harga Satuan</th>
-              <th>Total Harga</th>
-              <th>Uang Client</th>
-              <th>Kembalian</th>
-              <th>Tanggal</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {transaksi.length > 0 ? (
-              transaksi.map((trans) =>
-                trans.selectedProducts.map((product, index) => (
-                  <tr key={`${trans.id}-${index}`}>
-                    {index === 0 && (
-                      <>
-                        <td rowSpan={trans.selectedProducts.length}>{trans.kodeTransaksi || "N/A"}</td>
-                        <td rowSpan={trans.selectedProducts.length}>{trans.keteranganService || "N/A"}</td>
-                      </>
-                    )}
-                    <td>{product.quantity}</td>
-                    <td>{formatRupiah(product.price)}</td>
-                    {index === 0 && (
-                      <>
-                        <td rowSpan={trans.selectedProducts.length}>{formatRupiah(trans.totalHarga)}</td>
-                        <td rowSpan={trans.selectedProducts.length}>{formatRupiah(trans.clientPayment || 0)}</td>
-                        <td rowSpan={trans.selectedProducts.length}>{formatRupiah(trans.kembalian || 0)}</td>
-                        <td rowSpan={trans.selectedProducts.length}>
-                          {new Date(trans.tanggal.seconds * 1000).toLocaleDateString()}
-                        </td>
-                        <td rowSpan={trans.selectedProducts.length} className="action__btn">
-                          <Link href={`/dashboard/transaksi/form?id=${trans.id}`} className="btn btn-edit">Edit</Link>
-                          <button onClick={() => handleDelete(trans.id)} className="btn btn-delete">Hapus</button>
-                          <button onClick={() => handlePrint(trans)} className="btn btn-print">Print</button>
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                ))
-              )
-            ) : (
+        {loading ? (
+          <p>Loading transactions...</p>
+        ) : (
+          <table className="barang-table">
+            <thead>
               <tr>
-                <td colSpan="9" style={{ textAlign: "center" }}>Tidak ada transaksi yang ditemukan.</td>
+                <th>Kode Transaksi</th>
+                <th>Keterangan Service</th>
+                <th>Quantity</th>
+                <th>Harga Satuan</th>
+                <th>Total Harga</th>
+                <th>Uang Client</th>
+                <th>Kembalian</th>
+                <th>Tanggal</th>
+                <th>Aksi</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {filteredTransaksi.length > 0 ? (
+                filteredTransaksi.map((trans) =>
+                  trans.selectedProducts.map((product, index) => (
+                    <tr key={`${trans.id}-${index}`}>
+                      {index === 0 && (
+                        <td rowSpan={trans.selectedProducts.length}>{trans.kodeTransaksi || "N/A"}</td>
+                      )}
+                      <td>{trans.keteranganService || "N/A"}</td>
+                      <td>{product.quantity}</td>
+                      <td>{formatRupiah(product.price)}</td>
+                      {index === 0 && (
+                        <>
+                          <td rowSpan={trans.selectedProducts.length}>{formatRupiah(trans.totalHarga)}</td>
+                          <td rowSpan={trans.selectedProducts.length}>{formatRupiah(trans.clientPayment || 0)}</td>
+                          <td rowSpan={trans.selectedProducts.length}>{formatRupiah(trans.kembalian || 0)}</td>
+                          <td rowSpan={trans.selectedProducts.length}>
+                            {new Date(trans.tanggal.seconds * 1000).toLocaleDateString()}
+                          </td>
+                          <td rowSpan={trans.selectedProducts.length} className="action__btn">
+                            <Link href={`/dashboard/transaksi/form?id=${trans.id}`} className="btn btn-edit">Edit</Link>
+                            <button onClick={() => handleDelete(trans.id)} className="btn btn-delete">Hapus</button>
+                            <button onClick={() => handlePrint(trans)} className="btn btn-print">Print</button>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))
+                )
+              ) : (
+                <tr>
+                  <td colSpan="9">Tidak ada transaksi ditemukan.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </section>
   );

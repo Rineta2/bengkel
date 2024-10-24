@@ -1,10 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-
 import { db } from "@/utlis/firebase";
-
 import { addDoc, collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
-
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function FormTransaksi() {
@@ -18,7 +15,7 @@ export default function FormTransaksi() {
   const [clientPayment, setClientPayment] = useState(0);
   const [selectedProducts, setSelectedProducts] = useState([{ id: "", quantity: 1, price: 0, name: "" }]);
   const [totalHarga, setTotalHarga] = useState(0);
-
+  const [kembalian, setKembalian] = useState(0);
   const [productList, setProductList] = useState([]);
 
   useEffect(() => {
@@ -34,15 +31,16 @@ export default function FormTransaksi() {
           setSelectedProducts(data.selectedProducts || []);
           setTotalHarga(data.totalHarga || 0);
           setClientPayment(data.clientPayment || 0);
+        } else {
+          console.log("Transaksi tidak ditemukan.");
         }
       }
     };
 
     const fetchProducts = async () => {
-      // Ambil daftar produk dari Firestore
       const productSnapshot = await getDocs(collection(db, "dataBarang"));
-      const productList = productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setProductList(productList);
+      const products = productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setProductList(products);
     };
 
     fetchTransaksi();
@@ -52,17 +50,15 @@ export default function FormTransaksi() {
   const handleProductChange = (index, field, value) => {
     const updatedProducts = [...selectedProducts];
     updatedProducts[index] = { ...updatedProducts[index], [field]: value };
-    setSelectedProducts(updatedProducts);
 
-    // Jika field yang diubah adalah ID produk, secara otomatis update nama dan harga produk
     if (field === "id") {
       const selectedProduct = productList.find(product => product.id === value);
       if (selectedProduct) {
         updatedProducts[index].name = selectedProduct.name;
-        updatedProducts[index].price = selectedProduct.price;
-        setSelectedProducts(updatedProducts);
+        updatedProducts[index].price = selectedProduct.hargaJual || 0;
       }
     }
+    setSelectedProducts(updatedProducts);
   };
 
   const handleAddProduct = () => {
@@ -70,19 +66,40 @@ export default function FormTransaksi() {
   };
 
   const handleRemoveProduct = (index) => {
-    const updatedProducts = [...selectedProducts];
-    updatedProducts.splice(index, 1);
+    const updatedProducts = selectedProducts.filter((_, i) => i !== index);
     setSelectedProducts(updatedProducts);
   };
 
   const calculateTotalHarga = () => {
-    let total = selectedProducts.reduce((acc, product) => acc + product.price * product.quantity, 0);
+    const total = selectedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
     setTotalHarga(total);
+  };
+
+  const calculateKembalian = () => {
+    setKembalian(clientPayment - totalHarga);
   };
 
   useEffect(() => {
     calculateTotalHarga();
   }, [selectedProducts]);
+
+  useEffect(() => {
+    calculateKembalian();
+  }, [clientPayment, totalHarga]);
+
+  const updateProductQuantities = async () => {
+    for (const product of selectedProducts) {
+      const productDoc = doc(db, "dataBarang", product.id);
+      const productSnap = await getDoc(productDoc);
+
+      if (productSnap.exists()) {
+        const currentQuantity = productSnap.data().quantity || 0;
+        const newQuantity = currentQuantity - product.quantity;
+
+        await updateDoc(productDoc, { quantity: newQuantity });
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -93,8 +110,8 @@ export default function FormTransaksi() {
       selectedProducts,
       totalHarga,
       clientPayment,
-      kembalian: clientPayment - totalHarga,
-      tanggal: new Date(tanggal),
+      kembalian,
+      tanggal: new Date(tanggal), // Pastikan tanggal adalah objek Date
     };
 
     try {
@@ -107,85 +124,84 @@ export default function FormTransaksi() {
         console.log("Transaksi berhasil ditambahkan.");
       }
 
-      // Perbarui stok barang setelah transaksi ditambahkan
-      for (let product of selectedProducts) {
-        const barangDocRef = doc(db, "dataBarang", product.id);
-        const barangDocSnap = await getDoc(barangDocRef);
-
-        if (barangDocSnap.exists()) {
-          const barangData = barangDocSnap.data();
-          const updatedQuantity = barangData.quantity - product.quantity;
-
-          if (updatedQuantity >= 0) {
-            await updateDoc(barangDocRef, { quantity: updatedQuantity });
-            console.log(`Stok barang ${product.name} berhasil diperbarui.`);
-          } else {
-            console.warn(`Stok barang ${product.name} tidak mencukupi.`);
-          }
-        } else {
-          console.error(`Barang dengan ID ${product.id} tidak ditemukan.`);
-        }
-      }
+      // Perbarui jumlah produk di koleksi dataBarang
+      await updateProductQuantities();
 
       router.push("/dashboard/transaksi");
     } catch (error) {
-      console.error("Error submitting transaction: ", error);
+      console.error("Error adding/updating transaksi: ", error);
     }
   };
 
   return (
-    <section className="form__transaksi">
+    <section>
       <div className="container">
-        <form onSubmit={handleSubmit}>
-          <label>Kode Transaksi:</label>
-          <input type="text" value={kodeTransaksi} onChange={(e) => setKodeTransaksi(e.target.value)} required />
-
-          <label>Keterangan Service:</label>
-          <textarea value={keteranganService} onChange={(e) => setKeteranganService(e.target.value)} required />
-
-          <label>Tanggal:</label>
-          <input type="date" value={tanggal} onChange={(e) => setTanggal(e.target.value)} required />
-
-          <label>Produk:</label>
-          {selectedProducts.map((product, index) => (
-            <div key={index}>
-              {/* Dropdown untuk memilih produk */}
-              <select
-                value={product.id}
-                onChange={(e) => handleProductChange(index, "id", e.target.value)}
-                required
-              >
-                <option value="">Pilih Produk</option>
-                {productList.map((prod) => (
-                  <option key={prod.id} value={prod.id}>
-                    {prod.name}
-                  </option>
-                ))}
-              </select>
+        <div className="content">
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              placeholder="Kode Transaksi"
+              value={kodeTransaksi}
+              onChange={(e) => setKodeTransaksi(e.target.value)}
+              required
+            />
+            <textarea
+              placeholder="Keterangan"
+              value={keteranganService}
+              onChange={(e) => setKeteranganService(e.target.value)}
+              required
+            />
+            <input
+              type="date"
+              value={tanggal}
+              onChange={(e) => setTanggal(e.target.value)}
+              required
+            />
+            <div>
+              {selectedProducts.map((product, index) => (
+                <div key={index}>
+                  <select
+                    value={product.id}
+                    onChange={(e) => handleProductChange(index, "id", e.target.value)}
+                    required
+                  >
+                    <option value="">Pilih Produk</option>
+                    {productList.map((prod) => (
+                      <option key={prod.id} value={prod.id}>
+                        {prod.name}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    placeholder="Jumlah"
+                    value={product.quantity}
+                    onChange={(e) => handleProductChange(index, "quantity", Number(e.target.value))}
+                    required
+                  />
+                  <button type="button" onClick={() => handleRemoveProduct(index)}>Hapus</button>
+                </div>
+              ))}
+              <button type="button" onClick={handleAddProduct}>Tambah Produk</button>
+            </div>
+            <div>
+              <h3>Total Harga: Rp {totalHarga.toLocaleString()}</h3>
               <input
                 type="number"
-                placeholder="Quantity"
-                value={product.quantity}
-                onChange={(e) => handleProductChange(index, "quantity", parseInt(e.target.value))}
+                placeholder="Pembayaran"
+                value={clientPayment}
+                onChange={(e) => setClientPayment(Number(e.target.value))}
                 required
               />
-              <input type="number" placeholder="Harga" value={product.price} readOnly />
-              <button type="button" onClick={() => handleRemoveProduct(index)}>Hapus Produk</button>
+              <h3>Kembalian: Rp {kembalian.toLocaleString()}</h3>
             </div>
-          ))}
-          <button type="button" onClick={handleAddProduct}>Tambah Produk</button>
 
-          <label>Total Harga:</label>
-          <input type="number" value={totalHarga} readOnly />
+            <button type="submit" className="btn btn-primary">
+              {id ? "Perbarui Transaksi" : "Tambah Transaksi"}
+            </button>
 
-          <label>Uang Client:</label>
-          <input type="number" value={clientPayment} onChange={(e) => setClientPayment(parseInt(e.target.value))} required />
-
-          <label>Kembalian:</label>
-          <input type="number" value={clientPayment - totalHarga} readOnly />
-
-          <button type="submit">Simpan</button>
-        </form>
+          </form>
+        </div>
       </div>
     </section>
   );

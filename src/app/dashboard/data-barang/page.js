@@ -7,7 +7,7 @@ import { FaEdit } from "react-icons/fa";
 import { IoTrashOutline } from "react-icons/io5";
 import Modal from "@/components/UI/section/dashboard/data-barang/Modal";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import the styles
+import "react-toastify/dist/ReactToastify.css";
 
 export default function DataBarang() {
   const [barang, setBarang] = useState([]);
@@ -35,30 +35,10 @@ export default function DataBarang() {
       try {
         await deleteDoc(barangDoc);
         setBarang(barang.filter((item) => item.id !== itemToDelete));
-        toast.success("Data berhasil dihapus", {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          transition: "Flip",
-        });
+        toast.success("Data berhasil dihapus");
       } catch (error) {
         console.error("Error deleting document:", error);
-        toast.error("Terjadi kesalahan saat menghapus data", {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          transition: "Flip",
-        });
+        toast.error("Terjadi kesalahan saat menghapus data");
       } finally {
         setIsModalOpen(false);
         setItemToDelete(null);
@@ -75,7 +55,6 @@ export default function DataBarang() {
   return (
     <section className="data-barang">
       <div className="barang__container container">
-
         <div className="actions">
           <div className="title">
             <h1>Data Barang</h1>
@@ -89,7 +68,7 @@ export default function DataBarang() {
         <div className="toolbar">
           <input
             type="text"
-            placeholder="Cari Kode atau Nama Barang" // Update placeholder
+            placeholder="Cari Kode atau Nama Barang"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
@@ -106,7 +85,8 @@ export default function DataBarang() {
               <th>No</th>
               <th>Kode Barang</th>
               <th>Nama Barang</th>
-              <th>Harga</th>
+              <th>Harga Modal</th>
+              <th>Harga Jual</th>
               <th>Stok</th>
               <th>Action</th>
             </tr>
@@ -118,7 +98,8 @@ export default function DataBarang() {
                 <td>{index + 1}</td>
                 <td>{item.kodeBarang}</td>
                 <td>{item.name}</td>
-                <td>Rp {item.price.toLocaleString()}</td>
+                <td>Rp {item.hargaModal.toLocaleString()}</td>
+                <td>Rp {item.hargaJual.toLocaleString()}</td>
                 <td>{item.quantity}</td>
                 <td className="action__btn">
                   <Link href={`/dashboard/data-barang/form?id=${item.id}`}>
