@@ -92,7 +92,7 @@ export default function DataBarang() {
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="barang-table">
             {filteredBarang.map((item, index) => (
               <tr key={item.id}>
                 <td>{index + 1}</td>

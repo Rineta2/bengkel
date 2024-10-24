@@ -14,6 +14,7 @@ import {
   addDoc,
 } from "firebase/firestore";
 import Link from "next/link";
+import jsPDF from "jspdf";
 
 const TransaksiPage = () => {
   const [transaksi, setTransaksi] = useState([]);
@@ -100,80 +101,36 @@ const TransaksiPage = () => {
   };
 
   const handlePrint = (trans) => {
-    const printContent = `
-      <html>
-        <head>
-          <title>Cetak Struk</title>
-          <style>
-            @media print {
-              body { font-family: Arial, sans-serif; padding: 0; margin: 0; }
-              .receipt-container { max-width: 280px; margin: auto; border: 1px solid #ddd; padding: 10px; }
-              .store-info { text-align: center; margin-bottom: 10px; }
-              .item-list { width: 100%; margin-bottom: 10px; }
-              .item-list th, .item-list td { text-align: left; padding: 3px; }
-              .item-list th { border-bottom: 1px solid #000; }
-              .total-section { text-align: right; margin-top: 5px; }
-              .thanks-message { text-align: center; margin-top: 10px; }
-              @page { size: 80mm auto; margin: 0; } /* Ukuran kertas untuk printer thermal */
-            }
-          </style>
-        </head>
-        <body>
-          <div class="receipt-container">
-            <div class="store-info">
-              <h2>Digitalia</h2>
-              <p>Kp. Babakan, RT.01/RW.05, Desa Leuwiliang, Kec. Leuwiliang, Kab. Bogor, 16640</p>
-              <p>No. Telp 0813986302939</p>
-            </div>
-            <table class="item-list">
-              <thead>
-                <tr><th>Item</th><th>Qty</th><th>Harga</th></tr>
-              </thead>
-              <tbody>
-                ${trans.selectedProducts.map((product) => `
-                  <tr>
-                    <td>${product.name}</td>
-                    <td>${product.quantity}</td>
-                    <td>${formatRupiah(product.price)}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-            <div class="total-section">
-              <h3>Total: ${formatRupiah(trans.totalHarga)}</h3>
-              <h3>Bayar (Cash): ${formatRupiah(trans.clientPayment)}</h3>
-              <h3>Kembali: ${formatRupiah(trans.clientPayment - trans.totalHarga)}</h3>
-            </div>
-            <div class="thanks-message">
-              <p>Terimakasih Telah Berbelanja</p>
-              <p>Link Kritik dan Saran: digitalia.web.app/e-receipt</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
+    const doc = new jsPDF();
 
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'absolute';
-    iframe.style.width = '0px';
-    iframe.style.height = '0px';
-    iframe.style.border = 'none';
+    // Format isi PDF
+    doc.setFontSize(12);
+    doc.text("Digitalia", 105, 10, null, null, "center");
+    doc.text("Kp. Babakan, RT.01/RW.05, Desa Leuwiliang,", 105, 20, null, null, "center");
+    doc.text("Kec. Leuwiliang, Kab. Bogor, 16640", 105, 30, null, null, "center");
+    doc.text("No. Telp 0813986302939", 105, 40, null, null, "center");
 
-    document.body.appendChild(iframe);
+    doc.text("Struk Transaksi", 105, 50, null, null, "center");
 
-    const iframeDoc = iframe.contentWindow.document;
-    iframeDoc.open();
-    iframeDoc.write(printContent);
-    iframeDoc.close();
+    let yPosition = 60;
 
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
+    // Produk yang dibeli
+    trans.selectedProducts.forEach((product, index) => {
+      doc.text(`${index + 1}. ${product.name} - Qty: ${product.quantity} - Harga: ${formatRupiah(product.price)}`, 20, yPosition);
+      yPosition += 10;
+    });
 
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 1000);
+    // Total dan informasi lainnya
+    doc.text(`Total: ${formatRupiah(trans.totalHarga)}`, 20, yPosition + 10);
+    doc.text(`Bayar: ${formatRupiah(trans.clientPayment)}`, 20, yPosition + 20);
+    doc.text(`Kembalian: ${formatRupiah(trans.clientPayment - trans.totalHarga)}`, 20, yPosition + 30);
+
+    doc.text("Terimakasih Telah Berbelanja!", 105, yPosition + 50, null, null, "center");
+
+    // Memanggil dialog print
+    doc.autoPrint();
+    window.open(doc.output('bloburl'));  // Membuka file dalam mode cetak
   };
-
   // Filter transactions based on search term
   const filteredTransaksi = transaksi.filter((trans) =>
     trans.kodeTransaksi.toLowerCase().includes(searchTerm.toLowerCase())
