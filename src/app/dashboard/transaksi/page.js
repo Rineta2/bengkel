@@ -154,7 +154,6 @@ const TransaksiPage = () => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   };
 
-  // Filter transactions based on search term
   const filteredTransaksi = transaksi.filter((trans) =>
     trans.kodeTransaksi.toLowerCase().includes(searchTerm.toLowerCase())
   );
