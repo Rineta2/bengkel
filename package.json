@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "file-saver": "^2.0.5",
     "firebase": "^10.14.1",
     "js-cookie": "^3.0.5",
     "jspdf": "^2.5.2",

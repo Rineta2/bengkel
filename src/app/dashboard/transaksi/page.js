@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import Link from "next/link";
 import jsPDF from "jspdf";
+import { saveAs } from 'file-saver';
 
 const TransaksiPage = () => {
   const [transaksi, setTransaksi] = useState([]);
@@ -103,13 +104,14 @@ const TransaksiPage = () => {
   const handlePrint = (trans) => {
     const doc = new jsPDF();
 
-    // Format isi PDF
+    // Header
     doc.setFontSize(12);
     doc.text("Digitalia", 105, 10, null, null, "center");
     doc.text("Kp. Babakan, RT.01/RW.05, Desa Leuwiliang,", 105, 20, null, null, "center");
     doc.text("Kec. Leuwiliang, Kab. Bogor, 16640", 105, 30, null, null, "center");
     doc.text("No. Telp 0813986302939", 105, 40, null, null, "center");
 
+    // Title
     doc.text("Struk Transaksi", 105, 50, null, null, "center");
 
     let yPosition = 60;
@@ -120,17 +122,38 @@ const TransaksiPage = () => {
       yPosition += 10;
     });
 
-    // Total dan informasi lainnya
-    doc.text(`Total: ${formatRupiah(trans.totalHarga)}`, 20, yPosition + 10);
-    doc.text(`Bayar: ${formatRupiah(trans.clientPayment)}`, 20, yPosition + 20);
-    doc.text(`Kembalian: ${formatRupiah(trans.clientPayment - trans.totalHarga)}`, 20, yPosition + 30);
+    // Total harga dan informasi lainnya
+    yPosition += 10;
+    doc.text(`Total: ${formatRupiah(trans.totalHarga)}`, 20, yPosition);
+    doc.text(`Bayar: ${formatRupiah(trans.clientPayment)}`, 20, yPosition + 10);
+    doc.text(`Kembalian: ${formatRupiah(trans.clientPayment - trans.totalHarga)}`, 20, yPosition + 20);
 
-    doc.text("Terimakasih Telah Berbelanja!", 105, yPosition + 50, null, null, "center");
+    // Footer
+    doc.text("Terimakasih Telah Berbelanja!", 105, yPosition + 40, null, null, "center");
 
-    // Memanggil dialog print
-    doc.autoPrint();
-    window.open(doc.output('bloburl'));  // Membuka file dalam mode cetak
+    // Generate PDF blob
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+
+    // Membuka PDF di tab baru
+    const newWindow = window.open(pdfUrl);
+
+    // Setelah PDF dibuka, langsung cetak secara otomatis jika window berhasil dibuka
+    if (newWindow) {
+      newWindow.onload = () => {
+        newWindow.focus(); // Fokus ke window baru
+        newWindow.print(); // Buka dialog print
+      };
+    } else {
+      // Jika tidak bisa membuka tab baru (kemungkinan pada beberapa perangkat mobile)
+      alert('Gagal membuka file PDF, pastikan pop-up diizinkan di browser.');
+    }
   };
+
+  const isMobileDevice = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
   // Filter transactions based on search term
   const filteredTransaksi = transaksi.filter((trans) =>
     trans.kodeTransaksi.toLowerCase().includes(searchTerm.toLowerCase())
