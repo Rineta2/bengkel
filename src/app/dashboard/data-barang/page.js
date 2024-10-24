@@ -75,6 +75,7 @@ export default function DataBarang() {
   return (
     <section className="data-barang">
       <div className="barang__container container">
+
         <div className="actions">
           <div className="title">
             <h1>Data Barang</h1>

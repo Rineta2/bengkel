@@ -19,7 +19,6 @@ export default function FormTransaksi() {
   const [selectedProducts, setSelectedProducts] = useState([{ id: "", quantity: 1, price: 0, name: "" }]);
   const [totalHarga, setTotalHarga] = useState(0);
 
-  // Tambahkan state untuk menyimpan daftar produk
   const [productList, setProductList] = useState([]);
 
   useEffect(() => {

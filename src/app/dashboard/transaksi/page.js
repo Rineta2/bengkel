@@ -77,6 +77,14 @@ const TransaksiPage = () => {
     return `TRANS-${Date.now()}`;
   };
 
+  const formatRupiah = (number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(number);
+  };
+
   const handlePrint = (trans) => {
     const printContent = `
       <html>
@@ -109,15 +117,15 @@ const TransaksiPage = () => {
                   <tr>
                     <td>${product.name}</td>
                     <td>${product.quantity}</td>
-                    <td>Rp ${product.price}</td>
+                    <td>${formatRupiah(product.price)}</td>
                   </tr>
                 `).join('')}
               </tbody>
             </table>
             <div class="total-section">
-              <h3>Total: Rp ${trans.totalHarga}</h3>
-              <h3>Bayar (Cash): Rp ${trans.clientPayment}</h3>
-              <h3>Kembali: Rp ${(trans.clientPayment - trans.totalHarga).toFixed(2)}</h3>
+              <h3>Total: ${formatRupiah(trans.totalHarga)}</h3>
+              <h3>Bayar (Cash): ${formatRupiah(trans.clientPayment)}</h3>
+              <h3>Kembali: ${formatRupiah(trans.clientPayment - trans.totalHarga)}</h3>
             </div>
             <div class="thanks-message">
               <p>Terimakasih Telah Berbelanja</p>
@@ -150,11 +158,28 @@ const TransaksiPage = () => {
   };
 
   return (
-    <section>
+    <section className="transaksi">
       <div className="transaksi__container container">
-        <h1>Daftar Transaksi</h1>
-        <button onClick={handleAddTransaksi} className="btn btn-create">Tambah Transaksi</button>
-        <table className="transaksi-table">
+
+        <div className="actions">
+          <div className="title">
+            <h1>Daftar Transaksi</h1>
+          </div>
+
+          <div className="form">
+            <button onClick={handleAddTransaksi} className="btn btn-create">Tambah Transaksi</button>
+          </div>
+        </div>
+
+        <div className="toolbar">
+          <input type="text" placeholder="Cari Kode Transaksi" />
+
+          <div className="total">
+            <h2>Total Transaksi: {transaksi.length}</h2>
+          </div>
+        </div>
+
+        <table className="barang-table">
           <thead>
             <tr>
               <th>Kode Transaksi</th>
@@ -168,6 +193,7 @@ const TransaksiPage = () => {
               <th>Aksi</th>
             </tr>
           </thead>
+
           <tbody>
             {transaksi.length > 0 ? (
               transaksi.map((trans) =>
@@ -180,19 +206,19 @@ const TransaksiPage = () => {
                       </>
                     )}
                     <td>{product.quantity}</td>
-                    <td>Rp {product.price}</td>
+                    <td>{formatRupiah(product.price)}</td>
                     {index === 0 && (
                       <>
-                        <td rowSpan={trans.selectedProducts.length}>Rp {trans.totalHarga}</td>
-                        <td rowSpan={trans.selectedProducts.length}>Rp {trans.clientPayment || "N/A"}</td>
-                        <td rowSpan={trans.selectedProducts.length}>Rp {trans.kembalian || "N/A"}</td>
+                        <td rowSpan={trans.selectedProducts.length}>{formatRupiah(trans.totalHarga)}</td>
+                        <td rowSpan={trans.selectedProducts.length}>{formatRupiah(trans.clientPayment || 0)}</td>
+                        <td rowSpan={trans.selectedProducts.length}>{formatRupiah(trans.kembalian || 0)}</td>
                         <td rowSpan={trans.selectedProducts.length}>
                           {new Date(trans.tanggal.seconds * 1000).toLocaleDateString()}
                         </td>
-                        <td rowSpan={trans.selectedProducts.length}>
+                        <td rowSpan={trans.selectedProducts.length} className="action__btn">
                           <Link href={`/dashboard/transaksi/form?id=${trans.id}`} className="btn btn-edit">Edit</Link>
                           <button onClick={() => handleDelete(trans.id)} className="btn btn-delete">Hapus</button>
-                          <button onClick={() => handlePrint(trans)} className="btn btn-print">Cetak</button>
+                          <button onClick={() => handlePrint(trans)} className="btn btn-print">Print</button>
                         </td>
                       </>
                     )}
@@ -201,7 +227,7 @@ const TransaksiPage = () => {
               )
             ) : (
               <tr>
-                <td colSpan={9} style={{ textAlign: "center" }}>Tidak ada transaksi</td>
+                <td colSpan="9" style={{ textAlign: "center" }}>Tidak ada transaksi yang ditemukan.</td>
               </tr>
             )}
           </tbody>
